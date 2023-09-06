@@ -7,7 +7,6 @@ const tourRouter = require('./routes/tourRoutes');
 
 const userRouter = require('./routes/userRoutes');
 
-// console.log(process.env);
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
