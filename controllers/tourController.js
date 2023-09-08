@@ -20,6 +20,13 @@ exports.createTour = async (req, res) => {
   }
 };
 
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = 'price,-ratingsAverage';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 exports.getAllTours = async (req, res) => {
   try {
     // to remove certain words from the query object
@@ -57,6 +64,18 @@ exports.getAllTours = async (req, res) => {
       query = query.select(fields);
     } else {
       query.select('-__v');
+    }
+
+    // 4) PAGINATION
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numOfTours = await Tour.countDocuments();
+      if (skip >= numOfTours) throw new Error('This page does not exist');
     }
 
     // EXECUTE THE QUERY
