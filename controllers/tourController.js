@@ -155,3 +155,76 @@ exports.getTourStats = async (req, res) => {
     });
   }
 };
+
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    const year = req.params.year * 1;
+
+    const plan = await Tour.aggregate([
+      // unwind is used to destructure elements from an array document
+      {
+        $unwind: '$startDates',
+      },
+
+      // match stage is used for selecting
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+
+      // the group stage is used to group the matched documents into what '_id" you choose
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          numTours: { $sum: 1 },
+          tours: {
+            $push: '$name',
+          },
+        },
+      },
+
+      // the addFIelds stage adds a field with the value for the field you choose
+      {
+        $addFields: {
+          month: '$_id',
+        },
+      },
+
+      // the project stage hides a field 0 = to hide, 1 = to show
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+
+      // sorting 1 = for ascending, -1 = for descending
+      {
+        $sort: {
+          numTour: 1,
+        },
+      },
+
+      // limits the number of documents to what you have specified
+      // {
+      //   $limit: 6,
+      // },
+    ]);
+    // send response
+    res.status(200).json({
+      status: 'success',
+      results: plan.length,
+      data: {
+        plan,
+      },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'fail',
+      message: error,
+    });
+  }
+};
