@@ -1,7 +1,12 @@
 const express = require('express');
 
-const app = express();
 const morgan = require('morgan');
+
+const AppError = require('./utils/appError');
+
+const globalErrorHandler = require('./controllers/errorControllers');
+
+const app = express();
 
 const tourRouter = require('./routes/tourRoutes');
 
@@ -16,10 +21,10 @@ app.use(express.json());
 // serving static files
 app.use(express.static(`${__dirname}/public`));
 
-app.use((req, res, next) => {
-  console.log('Hello from the middleware');
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log('Hello from the middleware');
+//   next();
+// });
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
@@ -28,5 +33,23 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+
+// this should be the last part of all our middleware and routes
+app.use('*', (req, res, next) => {
+  // res.status(404).json({
+  //   status: 'fail',
+  //   message: `Can't find ${req.originalUrl} on this server!`,
+  // });
+
+  // const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  // err.status = 'fail';
+  // err.statusCode = 404;
+
+  // whatever is passed into the next function is recognized as an error
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// global error handling middleware
+app.use(globalErrorHandler);
 
 module.exports = app;
