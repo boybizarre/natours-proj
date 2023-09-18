@@ -1,6 +1,6 @@
 /* eslint-disable prefer-object-spread */
 /* eslint-disable no-unused-vars */
-const Tour = require('../models/tourModels');
+const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
