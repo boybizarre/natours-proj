@@ -47,8 +47,16 @@ const userSchema = new mongoose.Schema({
   },
 
   passwordChangedAt: Date,
+
   passwordResetToken: String,
+
   passwordResetExpires: Date,
+
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 // HASHING PASSWORD
@@ -61,6 +69,21 @@ userSchema.pre('save', async function (next) {
 
   // delete the confirm password field
   this.passwordConfirm = undefined;
+  next();
+});
+
+userSchema.pre('save', function (next) {
+  // if the password has not been modified and the document is new, return out of the middleware
+  if (!this.isModified('password') || this.isNew) return next();
+
+  // else we subtract 1 second from the timestamp incase saving to the database is slower than issuing a token
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  // this points to the current query and  only makes available to find all documents that have the active field set to true
+  this.find({ active: { $ne: false } });
   next();
 });
 
@@ -85,15 +108,6 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   // false means NOT changed
   return false;
 };
-
-userSchema.pre('save', function (next) {
-  // if the password has not been modified and the document is new, return out of the middleware
-  if (!this.isModified('password') || this.isNew) return next();
-
-  // else we subtract 1 second from the timestamp incase saving to the database is slower than issuing a token
-  this.passwordChangedAt = Date.now() - 1000;
-  next();
-});
 
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
