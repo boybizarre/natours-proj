@@ -5,21 +5,34 @@ const morgan = require('morgan');
 
 const rateLimit = require('express-rate-limit');
 
+const helmet = require('helmet');
+
+const mongoSanitize = require('express-mongo-sanitize');
+
+const xss = require('xss-clean');
+
+const hpp = require('hpp');
+
 const AppError = require('./utils/appError');
 
 const globalErrorHandler = require('./controllers/errorControllers');
 
 const app = express();
 
+// GLOBAL MIDDLEWARES
+// 1) set security http headers
+app.use(helmet());
+
 const tourRouter = require('./routes/tourRoutes');
 
 const userRouter = require('./routes/userRoutes');
 
+// 2) Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// implementing rate limiter for IP addresses
+// 3) implementing rate limiter for IP addresses
 const limiter = rateLimit({
   max: 3,
   windowMs: 60 * 60 * 1000, // one hour window
@@ -28,11 +41,33 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
-app.use(express.json());
+// 4) body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' }));
 
-// serving static files
+// 5) data sanitization against noSQL query injection
+app.use(mongoSanitize());
+
+// 6) data sanitization against xss
+app.use(xss());
+
+// 7) prevents from parameter pollution
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsAverage',
+      'ratingsQuantity',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  }),
+);
+
+// 8) serving static files
 app.use(express.static(`${__dirname}/public`));
 
+// 9) test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   // console.log(req.headers);
