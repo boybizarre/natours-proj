@@ -3,7 +3,8 @@ const express = require('express');
 const reviewController = require('../controllers/reviewController');
 const authController = require('../controllers/authController');
 
-const router = express.Router();
+// redirects parameter in tourRouter where reviewRouter is called
+const router = express.Router({ mergeParams: true });
 
 router
   .route('/')
