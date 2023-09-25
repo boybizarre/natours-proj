@@ -27,6 +27,8 @@ const tourRouter = require('./routes/tourRoutes');
 
 const userRouter = require('./routes/userRoutes');
 
+const reviewRouter = require('./routes/reviewRoutes');
+
 // 2) Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -34,7 +36,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // 3) implementing rate limiter for IP addresses
 const limiter = rateLimit({
-  max: 3,
+  max: 100,
   windowMs: 60 * 60 * 1000, // one hour window
   message: 'Too many requests from this IP, please try again in an hour!',
 });
@@ -74,8 +76,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// mounting routers on paths
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 // this should be the last part of all our middleware and routes
 app.use('*', (req, res, next) => {

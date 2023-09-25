@@ -1,7 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+// const User = require('./userModel');
+// const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -13,7 +14,7 @@ const tourSchema = new mongoose.Schema(
       maxlength: [40, 'A tour must have more or equal to 40 characters'],
       minlength: [10, 'A tour must have more or equal to 10 characters'],
       // doesn't allow white-spaces between characters
-      validate: [validator.isAlpha, 'Tour name must only contain characters'],
+      // validate: [validator.isAlpha, 'Tour name must only contain characters'],
     },
 
     slug: String,
@@ -94,7 +95,44 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number], // longitude first, latitude second (reversed)
+      address: String,
+      description: String,
+    },
+
+    // embedding
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+
+    // child referencing
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
+
+  // what this does is to populate the document with fields that are not persistent to the database when there is an output
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
@@ -107,11 +145,33 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+// virtual populate
+tourSchema.virtual('reviews', {
+  ref: 'Review', // name of the model
+  foreignField: 'tour', // name of the field in the model we're pointing to
+  localField: '_id', // what it's called here in model here
+});
+
 // DOCUMENT MIDDLEWARE: runs before .save() or .create() except .insertMany()
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+  next();
+});
+
+// embedding users into the tours
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guidesPromises);
+//   next();
+// });
 
 // tourSchema.pre('save', (next) => {
 //   console.log('Will save document');
