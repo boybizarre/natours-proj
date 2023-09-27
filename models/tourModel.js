@@ -139,6 +139,10 @@ const tourSchema = new mongoose.Schema(
   },
 );
 
+// tourSchema.index({ price: 1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: -1 });
+
 // cannot use an arrow function in the callback because an arrow function does not have access to its own this keyword
 // durationWeeks will not persist to database storage
 tourSchema.virtual('durationWeeks').get(function () {

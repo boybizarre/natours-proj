@@ -72,7 +72,7 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
       },
     },
     // calculate whatever average or sum you need to using the keys in the object
-    // group by whatever key in object (_id)
+    // group by whatever value in object (_id)
     {
       $group: {
         // _id: '$ratingsAverage',
