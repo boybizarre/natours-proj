@@ -44,6 +44,9 @@ const reviewSchema = new mongoose.Schema(
   },
 );
 
+// cannot post more than one review on a tour
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 // DOCUMENT MIDDLEWARE
 reviewSchema.pre(/^find/, function (next) {
   // this.populate({

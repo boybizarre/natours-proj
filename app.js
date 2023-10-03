@@ -1,4 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
+const path = require('path');
+
 const express = require('express');
 
 const morgan = require('morgan');
@@ -18,6 +20,10 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorControllers');
 
 const app = express();
+
+app.set('view engine', 'pug');
+
+app.set('views', path.join(__dirname, 'views'));
 
 // GLOBAL MIDDLEWARES
 // 1) set security http headers
