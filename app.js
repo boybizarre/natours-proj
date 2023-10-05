@@ -21,9 +21,13 @@ const globalErrorHandler = require('./controllers/errorControllers');
 
 const app = express();
 
+// setting up pug
 app.set('view engine', 'pug');
 
 app.set('views', path.join(__dirname, 'views'));
+
+// 8) serving static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 // GLOBAL MIDDLEWARES
 // 1) set security http headers
@@ -72,9 +76,6 @@ app.use(
   }),
 );
 
-// 8) serving static files
-app.use(express.static(`${__dirname}/public`));
-
 // 9) test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
@@ -83,6 +84,14 @@ app.use((req, res, next) => {
 });
 
 // mounting routers on paths
+
+app.get('/', (req, res) => {
+  res.status(200).render('base', {
+    tour: 'The Forest Hiker',
+    user: 'Jonas',
+  });
+});
+
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
