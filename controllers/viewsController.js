@@ -36,7 +36,10 @@ exports.getTour = catchAsync(async (req, res, next) => {
 exports.getLoginForm = catchAsync(async (req, res, next) => {
   // const user = await tour.findBy
 
-  res.status(200).render('login', {
-    title: 'Log into your account',
-  });
+  res
+    .status(200)
+    .set('Content-Security-Policy', "script-src 'self' cdnjs.cloudflare.com")
+    .render('login', {
+      title: 'Log into your account',
+    });
 });

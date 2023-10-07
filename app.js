@@ -15,11 +15,23 @@ const xss = require('xss-clean');
 
 const hpp = require('hpp');
 
+const cors = require('cors');
+
+const cookieParser = require('cookie-parser');
+
 const AppError = require('./utils/appError');
 
 const globalErrorHandler = require('./controllers/errorControllers');
 
 const app = express();
+
+const corsOptions = {
+  origin: '*',
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 // setting up pug
 app.set('view engine', 'pug');
@@ -57,6 +69,7 @@ app.use('/api', limiter);
 
 // 4) body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 
 // 5) data sanitization against noSQL query injection
 app.use(mongoSanitize());
@@ -81,7 +94,7 @@ app.use(
 // 9) test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  // console.log(req.headers);
+  console.log(req.cookies);
   next();
 });
 

@@ -22,7 +22,7 @@ const createSendToken = (user, statusCode, res) => {
     // makes sure that the cookie is only sent on an encrypted connection https
     // secure: true,
     // makes sure that cookie cannot be accessed or modified anywhere by the browser. prevents cross side scripting attack
-    httpOnly: true,
+    // httpOnly: true,
   };
 
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
@@ -81,6 +81,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer ')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
