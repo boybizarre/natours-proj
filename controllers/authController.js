@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const sendMail = require('../utils/email');
+const Email = require('../utils/email');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -50,6 +50,10 @@ exports.signUp = catchAsync(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
     role: req.body.role,
   });
+
+  const url = `${req.protocol}://${req.get('host')}/me`;
+  console.log(url);
+  await new Email(newUser, url).sendWelcome();
 
   createSendToken(newUser, 201, res);
 });
@@ -199,11 +203,11 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // using the try catch block because i want to reset the token and expires field before sending the error message
   try {
-    await sendMail({
-      email: user.email,
-      subject: 'Your password reset token (valid for 10mins)',
-      message,
-    });
+    // await sendMail({
+    //   email: user.email,
+    //   subject: 'Your password reset token (valid for 10mins)',
+    //   message,
+    // });
 
     res.status(200).json({
       status: 'success',

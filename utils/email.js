@@ -1,32 +1,65 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const nodemailer = require('nodemailer');
+const pug = require('pug');
+const { convert } = require('html-to-text');
 
-const sendMail = async (options) => {
-  // 1) Create a transporter
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
+module.exports = class Email {
+  constructor(user, url) {
+    this.to = user.email;
+    this.firstName = user.name.split(' ')[0];
+    this.url = url;
+    this.from = `Boy Bizarre <${process.env.EMAIL_FROM}>`;
+  }
 
-    // activate in gmail "less secure app" option
-  });
+  newTransport() {
+    if (process.env.NODE_ENV === 'production') {
+      return 1;
+    }
 
-  // 2) Defined the email option
-  const mailOptions = {
-    from: 'Boy Bizarre <boybizarre@gmail.com>',
-    to: options.email,
-    subject: options.subject,
-    text: options.message,
-    // html:
-  };
+    // 1) Create a transporter
+    return nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+  }
 
-  // 3) actually send the email
-  await transporter.sendMail(mailOptions);
+  // send the actual email
+  async send(template, subject) {
+    // 1) render HTML based on pug template
+    const html = pug.renderFile(
+      `${__dirname}/../views/emails/${template}.pug`,
+      {
+        firstName: this.firstName,
+        url: this.url,
+        subject,
+      },
+    );
+
+    const options = {
+      wordwrap: 130,
+      // ...
+    };
+
+    // 2) Defined the email option
+    const mailOptions = {
+      from: this.from,
+      to: this.to,
+      subject,
+      html,
+      text: convert(html, options),
+      // html:
+    };
+
+    // 3) create a transport and send email
+    await this.newTransport().sendMail(mailOptions);
+  }
+
+  async sendWelcome() {
+    await this.send('welcome', 'Welcome to the Natours Family');
+  }
 };
-
-module.exports = sendMail;
-
 // mailtrap.io
