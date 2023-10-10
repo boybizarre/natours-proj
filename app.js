@@ -53,6 +53,8 @@ const reviewRouter = require('./routes/reviewRoutes');
 
 const viewRouter = require('./routes/viewRoutes');
 
+const bookingRouter = require('./routes/bookingRoutes');
+
 // 2) Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -103,6 +105,7 @@ app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 // this should be the last part of all our middleware and routes
 app.use('*', (req, res, next) => {

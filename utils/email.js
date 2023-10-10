@@ -2,6 +2,7 @@
 const nodemailer = require('nodemailer');
 const pug = require('pug');
 const { convert } = require('html-to-text');
+const mailgun = require('nodemailer-mailgun-transport');
 
 module.exports = class Email {
   constructor(user, url) {
@@ -13,7 +14,18 @@ module.exports = class Email {
 
   newTransport() {
     if (process.env.NODE_ENV === 'production') {
+
       return 1;
+      // MailGun
+      // return nodemailer.createTransport(
+      //   mailgun({
+      //     auth: {
+      //       apiKey: process.env.MAILGUN_API_KEY,
+      //       domain: process.env.MAILGUN_DOMAIN,
+      //     },
+      //     secure: false,
+      //   }),
+      // );
     }
 
     // 1) Create a transporter
@@ -61,5 +73,13 @@ module.exports = class Email {
   async sendWelcome() {
     await this.send('welcome', 'Welcome to the Natours Family');
   }
+
+  async sendPasswordReset() {
+    await this.send(
+      'passwordReset',
+      'Your password reset token (valid for only 10 minutes)',
+    );
+  }
 };
+
 // mailtrap.io
