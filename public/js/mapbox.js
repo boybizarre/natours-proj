@@ -1,5 +1,5 @@
 /* eslint-disable */
-console.log('Hello from the client side!');
+console.log('Hello from the mapbox client side!');
 
 export const displayMap = (locations) => {
   // mapbox api
