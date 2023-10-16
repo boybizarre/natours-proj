@@ -24,6 +24,13 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+// app.use(cors());
+// app.use(cors({
+//   origin: 'https://www.natours.com', // will only allow this domain consume the API
+// }))
+
+// app.options('*', cors());
+// app.options('/api/v1/tours/:id', cors());
 
 // setting up pug
 app.set('view engine', 'pug');
@@ -111,6 +118,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/', viewRouter);
+// app.use('/api/v1/tours', cors(), tourRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
