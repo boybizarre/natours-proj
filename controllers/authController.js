@@ -12,7 +12,7 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
   const cookieOptions = {
@@ -23,9 +23,8 @@ const createSendToken = (user, statusCode, res) => {
     // secure: true,
     // makes sure that cookie cannot be accessed or modified anywhere by the browser. prevents cross side scripting attack
     httpOnly: true,
+    secure: req.secure || req.headers('x-forwarded-proto') === 'https',
   };
-
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
 
@@ -55,7 +54,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
   console.log(url);
   await new Email(newUser, url).sendWelcome();
 
-  createSendToken(newUser, 201, res);
+  createSendToken(newUser, 201, req, res);
 });
 
 exports.logIn = catchAsync(async (req, res, next) => {
@@ -74,7 +73,7 @@ exports.logIn = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect email or password', 401));
   }
   //  3) return token if every check passed
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, req, res);
 });
 
 // removing jwt token from cookies on log out
@@ -244,7 +243,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3) update changedPasswordAt property for the user
 
   // 4) log the user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -263,5 +262,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   //
 
   // 4) log user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });

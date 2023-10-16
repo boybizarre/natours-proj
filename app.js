@@ -15,6 +15,8 @@ const globalErrorHandler = require('./controllers/errorControllers');
 
 const app = express();
 
+app.enable('trust-proxy');
+
 const corsOptions = {
   origin: '*',
   credentials: true, //access-control-allow-credentials:true
