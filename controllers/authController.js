@@ -23,7 +23,7 @@ const createSendToken = (user, statusCode, req, res) => {
     // secure: true,
     // makes sure that cookie cannot be accessed or modified anywhere by the browser. prevents cross side scripting attack
     httpOnly: true,
-    secure: req.secure || req.headers('x-forwarded-proto') === 'https',
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   };
 
   res.cookie('jwt', token, cookieOptions);
